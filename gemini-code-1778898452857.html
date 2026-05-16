@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arafater Rahman — Portfolio</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --color-bg: #0B0F12;
+      --color-surface: #13181C;
+      --color-surface-hover: #1A2127;
+      --color-accent: #FF7A00; /* Industrial Safety Orange */
+      --color-accent-dim: rgba(255, 122, 0, 0.15);
+      --color-text: #E6E8EA;
+      --color-muted: #8A949E;
+      --color-border: #222C35;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--color-bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-accent);
+    }
+
+    /* Selection Highlight */
+    ::selection {
+      background: var(--color-accent);
+      color: var(--color-bg);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const EDIT_PASSWORD = "arafat2024";
+    const STORAGE_KEY   = "arafater_portfolio_v2";
+
+    const DEFAULT_DATA = {
+      name: "Arafater Rahman",
+      title: "Mechanical Engineer | M.A.Sc | EIT | LEED AP",
+      tagline: "Bridging complex thermal physics with high-efficiency structural architecture.",
+      avatar: "",
+      summary: "I am a dedicated Mechanical Engineer specializing in energy optimization, structural dynamics, and computational systems. My background spans building envelope simulations, advanced finite element analysis (FEA), and technical consultation for clean-energy systems — converting raw technical computations into resilient physical designs.",
+      about: {
+        bio: "Fueled by structural physics and thermo-fluid mechanics, my engineering journey handles projects from concept drafting to computational analysis. I pivot easily between deep-dive simulations and multi-disciplinary field execution.",
+        interests: ["Computational Fluid Dynamics (CFD)","Finite Element Method (FEM/FEA)","LEED & Sustainable Design","Advanced Materials & Manufacturing"],
+        languages: ["English (Professional)","Bengali (Native)"]
+      },
+      researchProjects: [
+        { title: "Thermal Performance of Building Envelope Systems", year: "2024", desc: "Investigated heat transfer mechanisms in high-performance building envelopes using CFD simulation and experimental validation. Achieved 30% reduction in predicted heat loss.", tags: ["Thermodynamics", "CFD", "Building Science"] },
+        { title: "FEA of Composite Structural Members", year: "2023", desc: "Performed finite element analysis on fiber-reinforced composite beams under dynamic loading. Validated simulation results against experimental strain gauge data.", tags: ["FEA", "ANSYS", "Composites"] },
+        { title: "Energy Efficiency in HVAC Systems", year: "2022", desc: "Analyzed and optimized HVAC system configurations for commercial buildings targeting LEED certification. Achieved 25% energy savings.", tags: ["HVAC", "LEED", "Energy Modelling"] }
+      ],
+      professionalWork: [
+        { role: "Mechanical Engineer", company: "Engineering Firm", period: "2022 – Present", desc: "Lead mechanical design and analysis projects across thermal, structural, and fluid systems." },
+        { role: "Junior Engineer", company: "Consulting Group", period: "2019 – 2022", desc: "Supported senior engineers on HVAC design, energy modelling, and building code compliance reviews." },
+        { role: "Research Assistant", company: "University Lab", period: "2017 – 2019", desc: "Conducted experimental and computational research in heat transfer and fluid mechanics." }
+      ],
+      education: [
+        { degree: "M.A.Sc, Mechanical Engineering", institution: "University", year: "2019", desc: "Thesis focused on thermal-fluid systems and energy efficiency in built environments." },
+        { degree: "B.Sc, Mechanical Engineering", institution: "University", year: "2017", desc: "Dean's List. Specialized in thermodynamics and structural mechanics." }
+      ],
+      achievements: [
+        { title: "LEED AP Certification", year: "2023", desc: "Achieved LEED Accredited Professional designation." },
+        { title: "Engineer-in-Training (EIT)", year: "2020", desc: "Passed the FE exam and registered as an Engineer-in-Training." },
+        { title: "Best Graduate Research Award", year: "2019", desc: "Awarded for outstanding thesis contribution in thermal-fluid engineering." }
+      ],
+      skills: {
+        "Design & CAD": ["SolidWorks", "AutoCAD", "CATIA", "Fusion 360", "Creo", "Inventor"],
+        "Analysis & Simulation": ["ANSYS", "MATLAB", "Abaqus", "COMSOL", "CFD", "FEA"],
+        "Manufacturing": ["CNC Machining", "3D Printing", "GD&T", "Welding", "Lean Manufacturing"],
+        "Soft Skills": ["Technical Reporting", "Project Management", "Team Collaboration", "Problem Solving"]
+      },
+      contact: { email: "arafater.rahman@example.com", linkedin: "linkedin.com/in/arafater-rahman", twitter: "@arafaterrahman", location: "Canada" }
+    };
+
+    const SECTIONS = ["home", "about", "research", "work", "education", "achievements", "skills", "contact"];
+
+    function saveToStorage(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }
+    function loadFromStorage() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(e) {} return null; }
+    function readFileAsBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = () => rej(new Error("Err")); r.readAsDataURL(file); }); }
+
+    const SectionHeader = ({ num, title }) => (
+      <div style={{ marginBottom: 40, marginTop: 20 }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "var(--color-accent)", marginBottom: 6, letterSpacing: "0.1em" }}>// {num}</div>
+        <h2 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.02em", textTransform: "capitalize" }}>{title}</h2>
+        <div style={{ width: "100%", height: 1, background: "var(--color-border)", marginTop: 12 }} />
+      </div>
+    );
+
+    const SystemCard = ({ children, style }) => (
+      <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 6, padding: "24px", position: "relative", ...style }}>
+        {children}
+      </div>
+    );
+
+    const MonoBadge = ({ text, highlight }) => (
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, padding: "4px 10px", borderRadius: 4, background: highlight ? "var(--color-accent-dim)" : "#1C242C", color: highlight ? "var(--color-accent)" : "var(--color-text)", border: `1px solid ${highlight ? "var(--color-accent)" : "transparent"}` }}>
+        {text}
+      </span>
+    );
+
+    function ET({ value, onChange, editing, multiline, style, placeholder }) {
+      if (!editing) return multiline ? <p style={{ margin: 0, whiteSpace: "pre-wrap", ...style }}>{value}</p> : <span style={style}>{value}</span>;
+      return multiline
+        ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ width: "100%", background: "#1A2127", border: "1px solid var(--color-accent)", borderRadius: 4, color: "#fff", padding: "10px", fontSize: "inherit", fontFamily: "inherit", lineHeight: 1.6, boxSizing: "border-box", ...style }} />
+        : <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ background: "#1A2127", border: "1px solid var(--color-accent)", borderRadius: 4, color: "#fff", padding: "6px 12px", fontSize: "inherit", fontFamily: "inherit", width: "100%", boxSizing: "border-box", ...style }} />;
+    }
+
+    function AvatarUpload({ value, onChange }) {
+      const inputRef = useRef();
+      return (
+        <div style={{ position: "relative", width: 100, height: 100, borderRadius: 6, overflow: "hidden", border: "1px dashed var(--color-accent)", cursor: "pointer", background: "#151D24", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => inputRef.current.click()}>
+          {value ? <img src={value} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 12, color: "var(--color-accent)" }}>+ Upload</span>}
+          <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={async e => { if (e.target.files[0]) onChange(await readFileAsBase64(e.target.files[0])) }} />
+        </div>
+      );
+    }
+
+    function Portfolio() {
+      const [data, setData] = useState(() => loadFromStorage() || DEFAULT_DATA);
+      const [editing, setEditing] = useState(false);
+      const [showModal, setShowModal] = useState(false);
+      const refs = useRef({});
+
+      useEffect(() => { saveToStorage(data); }, [data]);
+
+      const handleScroll = (id) => { refs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+
+      const setPath = (path, val) => setData(prev => {
+        const next = JSON.parse(JSON.stringify(prev));
+        const keys = path.split(".");
+        let curr = next;
+        for (let i = 0; i < keys.length - 1; i++) curr = curr[keys[i]];
+        curr[keys[keys.length - 1]] = val;
+        return next;
+      });
+
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          
+          {/* Header Nav */}
+          <nav style={{ position: "fixed", top: 0, left: 0, right: 0, height: 64, background: "rgba(11, 15, 18, 0.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--color-border)", zIndex: 1000 }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 10, height: 10, background: "var(--color-accent)", borderRadius: 2 }} />
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14, fontWeight: 500 }}>AR.ENGINEERING</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+                <div style={{ display: "flex", gap: 16 }}>
+                  {SECTIONS.map(s => (
+                    <button key={s} onClick={() => handleScroll(s)} style={{ background: "none", border: "none", color: "var(--color-muted)", fontSize: 13, cursor: "pointer", fontFamily: "'JetBrains Mono', monospace" }}>
+                      .{s}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => editing ? setEditing(false) : setShowModal(true)} style={{ background: editing ? "var(--color-accent)" : "transparent", border: "1px solid var(--color-accent)", color: editing ? "var(--color-bg)" : "var(--color-accent)", padding: "6px 14px", borderRadius: 4, cursor: "pointer", fontSize: 12, fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>
+                  {editing ? "SYS.SAVE()" : "SYS.EDIT()"}
+                </button>
+              </div>
+            </div>
+          </nav>
+
+          {/* Access Modal */}
+          {showModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(5, 7, 9, 0.9)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-accent)", padding: 32, borderRadius: 6, width: 340, textAlign: "center" }}>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "var(--color-accent)", marginBottom: 16 }}>// SECURITY INTERFACE</div>
+                <input type="password" placeholder="ENTER ACCESS CODE" onChange={e => e.target.value === EDIT_PASSWORD && (setEditing(true), setShowModal(false))} style={{ width: "100%", background: "#0B0F12", border: "1px solid var(--color-border)", padding: 12, borderRadius: 4, color: "#fff", textAlign: "center", outline: "none", fontFamily: "monospace", letterSpacing: 4 }} />
+                <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", color: "var(--color-muted)", fontSize: 11, marginTop: 16, cursor: "pointer" }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Hero */}
+          <header ref={el => refs.current["home"] = el} style={{ minHeight: "95vh", display: "flex", alignItems: "center", padding: "120px 24px 60px", position: "relative", borderBottom: "1px solid var(--color-border)" }}>
+            <div style={{ position: "absolute", inset: 0, opacity: 0.04, pointerEvents: "none", backgroundImage: "radial-gradient(var(--color-text) 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+            <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "1fr 340px", gap: 60, alignItems: "center" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--color-accent)", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, marginBottom: 16 }}>
+                  <span>STATUS: ACTIVE</span>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00FF66", display: "inline-block" }} />
+                </div>
+                <h1 style={{ fontSize: "56px", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, marginBottom: 20 }}>
+                  <ET value={data.name} onChange={v => setPath("name", v)} editing={editing} />
+                </h1>
+                <h3 style={{ fontSize: 18, color: "var(--color-accent)", fontWeight: 500, marginBottom: 24, fontFamily: "'JetBrains Mono', monospace" }}>
+                  <ET value={data.title} onChange={v => setPath("title", v)} editing={editing} />
+                </h3>
+                <p style={{ fontSize: 16, color: "var(--color-muted)", lineHeight: 1.6, maxWidth: 640 }}>
+                  <ET value={data.tagline} onChange={v => setPath("tagline", v)} editing={editing} multiline />
+                </p>
+              </div>
+              
+              <div style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 6, padding: 32, textAlign: "center" }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+                  {editing ? <AvatarUpload value={data.avatar} onChange={v => setPath("avatar", v)} /> : (
+                    <div style={{ width: 90, height: 90, borderRadius: 4, background: "var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-accent)", fontSize: 32, fontWeight: 700, overflow: "hidden" }}>
+                      {data.avatar ? <img src={data.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : data.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "var(--color-muted)", textTransform: "uppercase", display: "grid", gap: 8, textAlign: "left" }}>
+                  <div>LOC: <span style={{ color: "#fff" }}>{data.contact.location}</span></div>
+                  <div>NET: <span style={{ color: "#fff" }}>{data.contact.email}</span></div>
+                  <button onClick={() => handleScroll("contact")} style={{ marginTop: 12, background: "var(--color-accent-dim)", border: "1px solid var(--color-accent)", color: "var(--color-accent)", padding: "10px", width: "100%", borderRadius: 4, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>INITIALIZE CONTACT</button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main style={{ maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 24px" }}>
+            
+            {/* About */}
+            <section ref={el => refs.current["about"] = el} style={{ padding: "80px 0 40px" }}>
+              <SectionHeader num="01" title="Core Architecture" />
+              <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 40 }}>
+                <SystemCard>
+                  <div style={{ fontSize: 16, lineHeight: 1.75, color: "var(--color-text)" }}>
+                    <ET value={data.summary} onChange={v => setPath("summary", v)} editing={editing} multiline />
+                  </div>
+                </SystemCard>
+                <div style={{ display: "grid", gap: 16 }}>
+                  <SystemCard style={{ padding: 18 }}>
+                    <div style={{ fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: "var(--color-accent)", marginBottom: 12 }}>// SPECIALIZED INTERESTS</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {data.about.interests.map((it, idx) => <MonoBadge key={idx} text={it} highlight />)}
+                    </div>
+                  </SystemCard>
+                </div>
+              </div>
+            </section>
+
+            {/* Research */}
+            <section ref={el => refs.current["research"] = el} style={{ padding: "40px 0" }}>
+              <SectionHeader num="02" title="Computational & Applied Research" />
+              <div style={{ display: "grid", gap: 20 }}>
+                {data.researchProjects.map((p, idx) => (
+                  <SystemCard key={idx}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                      <h4 style={{ fontSize: 18, fontWeight: 600 }}>{p.title}</h4>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "var(--color-accent)" }}>{p.year}</span>
+                    </div>
+                    <p style={{ color: "var(--color-muted)", fontSize: 14, lineHeight: 1.6, marginBottom: 16 }}>{p.desc}</p>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {
